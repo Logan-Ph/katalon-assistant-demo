@@ -92,17 +92,17 @@ An AI-powered assistant for Katalon documentation that leverages Google's Gemini
 
 - #### Windows
 
-```
-python -m venv venv
-.\venv\Scripts\activate
-```
+    ```
+    python -m venv venv
+    .\venv\Scripts\activate
+    ```
 
 - #### MacOs
 
-```
-python3 -m venv venv
-source venv/bin/activate
-```
+    ```
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
 ### 2.  Using Poetry
 
