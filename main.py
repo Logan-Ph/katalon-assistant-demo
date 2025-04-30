@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from fastapi import APIRouter
 from app.api import ai_agent_routes
+from chainlit.utils import mount_chainlit
 
 load_dotenv()
 app = FastAPI(
@@ -20,17 +20,4 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-@app.get("/")
-async def root():
-    return {
-        "name": "Katalon Documentation Assistant API",
-        "version": "1.0.0",
-        "description": "API for retrieving documentation assistance from Katalon knowledge base",
-    }
-
-@app.get("/health", tags=["Health"])
-async def health_check():
-    """
-    Health check endpoint to verify the API is running.
-    """
-    return {"status": "healthy", "api_version": "1.0.0"}
+mount_chainlit(app=app, target="cl_app.py", path="/")

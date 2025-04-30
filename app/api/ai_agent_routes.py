@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 import json
-from app.llm.ai_agent import get_gemini_response
+from app.llm.ai_agent import get_gemini_response, stream_gemini_response
 from app.embeddings.embeddings import get_embeddings
-from typing import List, Dict, Any, Optional
+from fastapi.responses import StreamingResponse
+import asyncio
+import random
 
 router = APIRouter(tags=['AI Agent'])
 
@@ -20,6 +22,31 @@ class QueryRequest(BaseModel):
 async def query(query: QueryRequest):
     response = await get_gemini_response(query.query)
     return {"response": response}
+
+
+@router.post(
+    "/stream",
+    summary="Stream a response from the Katalon knowledge base",
+    description="Takes a user query about Katalon and streams the response in chunks."
+)
+async def stream_query(query: QueryRequest):
+    async def generate():
+        async for chunk in stream_gemini_response(query.query):
+            if isinstance(chunk, str):
+                # Stream individual characters
+                for char in chunk:
+                    yield f"data: {json.dumps({'text': char})}\n\n"
+                    # Add a small random delay between characters
+                    await asyncio.sleep(random.uniform(0.01, 0.05))
+            else:
+                # If not a string, stream as is
+                yield f"data: {json.dumps({'text': str(chunk)})}\n\n"
+                await asyncio.sleep(random.uniform(0.01, 0.03))
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )
 
 
 @router.post(
